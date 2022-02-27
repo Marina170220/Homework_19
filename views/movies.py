@@ -2,13 +2,16 @@ from flask import request
 from flask_restx import Resource, Namespace
 
 from dao.model.movie import MovieSchema
+
 from implemented import movie_service
+from service.auth import auth_required, admin_required
 
 movie_ns = Namespace('movies')
 
 
 @movie_ns.route('/')
 class MoviesView(Resource):
+    @auth_required
     def get(self):
         director = request.args.get("director_id")
         genre = request.args.get("genre_id")
@@ -22,26 +25,30 @@ class MoviesView(Resource):
         res = MovieSchema(many=True).dump(all_movies)
         return res, 200
 
+    @admin_required
     def post(self):
         req_json = request.json
-        movie = movie_service.create(req_json)
-        return "", 201, {"location": f"/movies/{movie.id}"}
+        new_movie = movie_service.create(req_json)
+        return "", 201, {"location": f"/movies/{new_movie.id}"}
 
 
-@movie_ns.route('/<int:bid>')
+@movie_ns.route('/<int:mov_id>')
 class MovieView(Resource):
-    def get(self, bid):
-        b = movie_service.get_one(bid)
-        sm_d = MovieSchema().dump(b)
-        return sm_d, 200
+    @auth_required
+    def get(self, mov_id):
+        b = movie_service.get_one(mov_id)
+        return MovieSchema().dump(b), 200
 
-    def put(self, bid):
+    @admin_required
+    def put(self, mov_id):
         req_json = request.json
         if "id" not in req_json:
-            req_json["id"] = bid
-        movie_service.update(req_json)
-        return "", 204
+            req_json["id"] = mov_id
+        if movie_service.update(req_json):
+            return "", 204
+        return "Movie not found", 404
 
-    def delete(self, bid):
-        movie_service.delete(bid)
+    @admin_required
+    def delete(self, mov_id):
+        movie_service.delete(mov_id)
         return "", 204

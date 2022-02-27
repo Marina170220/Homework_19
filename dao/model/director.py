@@ -12,3 +12,5 @@ class Director(db.Model):
 class DirectorSchema(Schema):
     id = fields.Int()
     name = fields.Str()
+
+
