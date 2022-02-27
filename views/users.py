@@ -22,7 +22,7 @@ class UsersView(Resource):
         return f"User id {new_user.id} created", 201
 
 
-@user_ns.route('/<int: uid')
+@user_ns.route('/<int:uid>')
 class UserView(Resource):
     def get(self, uid: int):
         user = user_service.get_one(uid)
