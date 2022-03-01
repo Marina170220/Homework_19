@@ -43,6 +43,3 @@ class DirectorView(Resource):
     def delete(self, dir_id):
         director_service.delete(dir_id)
         return "", 204
-
-
-

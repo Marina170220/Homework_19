@@ -1,50 +1,64 @@
-GET http://127.0.0.1:5000/movies/
+GET http://localhost:10001/movies/
 Accept: application/json
 Authorization: test
 
 ###
 
-GET http://127.0.0.1:5000/movies/?director_id=12
+GET http://localhost:10001/users/
+Accept: application/json
+
+GET http://localhost:10001/movies/?director_id=12
 Accept: application/json
 
 ###
 
-GET http://127.0.0.1:5000/movies/?genre_id=4
+POST http://localhost:10001/auth/
+Accept: application/json
+Content-Type: application/json
+
+{
+   "username": "ivan",
+   "password": "P@ssw0rd"
+}
+
+###
+
+GET http://localhost:10001/movies/?genre_id=4
 Accept: application/json
 
 ###
 
-GET http://127.0.0.1:5000/movies/?year=2010
+GET http://localhost:10001/movies/?year=2010
 Accept: application/json
 
 ###
 
-GET http://127.0.0.1:5000/directors/
+GET http://localhost:10001/directors/
 Accept: application/json
 
 ###
 
-GET http://127.0.0.1:5000/directors/1
+GET http://localhost:10001/directors/1
 Accept: application/json
 
 ###
 
-GET http://127.0.0.1:5000/genres/
+GET http://localhost:10001/genres/
 Accept: application/json
 
 ###
 
-GET http://127.0.0.1:5000/genres/1
+GET http://localhost:10001/genres/1
 Accept: application/json
 
 ###
 
-GET http://127.0.0.1:5000/movies/21
+GET http://localhost:10001/movies/21
 Accept: application/json
 
 ###
 
-POST http://127.0.0.1:5000/movies/
+POST http://localhost:10001/movies/
 Accept: application/json
 Content-Type: application/json
 
@@ -58,7 +72,7 @@ Content-Type: application/json
 
 ###
 
-PUT http://127.0.0.1:5000/movies/21
+PUT http://localhost:10001/movies/21
 Accept: application/json
 Content-Type: application/json
 
@@ -75,7 +89,7 @@ Content-Type: application/json
 
 ###
 
-PATCH http://127.0.0.1:5000/movies/3
+PATCH http://localhost:10001/movies/3
 Accept: application/json
 Content-Type: application/json
 
@@ -92,4 +106,4 @@ Content-Type: application/json
 
 ###
 
-DELETE http://127.0.0.1:5000/movies/21
+DELETE http://localhost:10001/movies/21

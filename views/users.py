@@ -3,7 +3,6 @@ from flask_restx import Namespace, Resource
 
 from implemented import user_service
 from dao.model.user import UserSchema
-from service.auth import admin_required
 
 user_ns = Namespace('users')
 

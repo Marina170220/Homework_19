@@ -4,22 +4,18 @@ import hashlib
 import hmac
 import base64
 
-import jwt
-
 from flask import request, abort
+import jwt
 
 from constants import SECRET, ALGORITHM, PWD_HASH_SALT, PWD_HASH_ITERATIONS
 from implemented import user_service
 
 
-def auth_check():
-    if 'Authorization' not in request.headers:
-        return False
-    token = request.headers['Authorization'].split("Bearer ")[-1]
-    return jwt_decode(token)
-
-
-def jwt_decode(token):
+def check_token(token):
+    """
+    Проверка актуальности токена.
+    Return: декодированный токен.
+    """
     try:
         decoded_jwt = jwt.decode(token, SECRET, ALGORITHM)
     except:
@@ -28,7 +24,21 @@ def jwt_decode(token):
         return decoded_jwt
 
 
+def auth_check():
+    """
+    Проверка авторизации пользователя. Если пользователь авторизовался возвращаем токен.
+    Return: результат проверки токена.
+    """
+    if 'Authorization' not in request.headers:
+        return False
+    token = request.headers['Authorization'].split("Bearer ")[-1]
+    return check_token(token)
+
+
 def auth_required(func):
+    """
+    Декоратор, проверяющий авторизацию пользователя.
+    """
     def wrapper(*args, **kwargs):
         if auth_check():
             return func(*args, **kwargs)
@@ -38,18 +48,25 @@ def auth_required(func):
 
 
 def admin_required(func):
+    """
+    Декоратор, проверяющий права пользователя.
+    """
     def wrapper(*args, **kwargs):
         decoded_token = auth_check()
         if decoded_token:
-            user_role = decoded_token.get('role')
-            if user_role == 'admin':
-                return func(*args, **kwargs)
+            user_role = decoded_token.get('role', 'user')
+            if user_role != 'admin':
+                abort(403)
+            return func(*args, **kwargs)
         abort(401)
 
     return wrapper
 
 
 def generate_token(data):
+    """
+    Генерируем access и refresh токены.
+    """
     min30 = datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
     data['exp'] = calendar.timegm(min30.timetuple())
     access_token = jwt.encode(data, SECRET, algorithm=ALGORITHM)
@@ -61,12 +78,26 @@ def generate_token(data):
 
 
 def compare_passwords(password_hash, entered_password):
-    return hmac.compare_digest(base64.b64encode(password_hash),
-                               hashlib.pbkdf2_hmac('sha256'), entered_password.encode('utf-8'),
-                               PWD_HASH_SALT, PWD_HASH_ITERATIONS)
+    """
+    Сравниваем пароли пользователя.
+    Param password_hash: захешированный пароль из БД.
+    Param entered_password: пароль в чистом виде, полученный из реквеста.
+    Return: результат сравнения паролей в бинарном представлении.
+
+    """
+    decoded_digest = base64.b64decode(password_hash)
+    hash_digest = hashlib.pbkdf2_hmac('sha256', entered_password.encode('utf-8'),
+                                      PWD_HASH_SALT, PWD_HASH_ITERATIONS)
+
+    return hmac.compare_digest(decoded_digest, hash_digest)
 
 
 def login_user(req_json):
+    """
+    Авторизация пользователя и получение токенов.
+    Param req_json: данные пользователя в json-формате.
+    Return: access и refresh токены либо False в случае, если отсутствуют имя и/или пароль пользователя.
+    """
     user_name = req_json.get('username')
     user_password = req_json.get('password')
     if user_name and user_password:
@@ -80,8 +111,11 @@ def login_user(req_json):
 
 
 def refresh_token(req_json):
+    """
+    Получение новой пары токенов.
+    """
     refresh_token = req_json.get('refresh_token')
-    data = jwt_decode(refresh_token)
+    data = check_token(refresh_token)
     if data:
         tokens = generate_token(data)
         return tokens

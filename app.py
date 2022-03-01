@@ -13,7 +13,6 @@ from views.users import user_ns
 
 def create_data(app, db):
     with app.app_context():
-        db.drop_all()
         db.create_all()
 
         u1 = User(username="vasya", password="my_little_pony", role="user")
@@ -46,4 +45,4 @@ app = create_app(Config())
 app.debug = True
 
 if __name__ == '__main__':
-    app.run(host="localhost", port=10001, debug=True)
+    app.run(port=10001, debug=True)
